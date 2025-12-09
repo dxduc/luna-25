@@ -1,0 +1,25 @@
+# Based on https://github.com/DIAGNijmegen/luna25-baseline-public/blob/main/requirements.txt with additional packages.
+
+--extra-index-url https://download.pytorch.org/whl/cu117
+torch
+torchvision
+torchaudio
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+simpleitk
+scikit-learn
+tqdm
+transformers
+
+# Additional packages for this repository:
+hiera-transformer
+huggingface_hub
+ipykernel
+ipywidgets
+fastapi
+uvicorn
+python-multipart
+joblib

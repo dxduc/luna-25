@@ -1,0 +1,7 @@
+.env/
+test/
+test.py
+__pycache__/
+models/__pycache__/
+env
+models/*.pth
