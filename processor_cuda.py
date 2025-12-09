@@ -7,7 +7,7 @@ import torch
 from torchvision.transforms import v2
 
 import dataloader
-from models.model_hiera import Hiera2D, Hiera3D
+from models.mode_hiera_1 import VideoMAE
 
 
 logging.basicConfig(
@@ -35,19 +35,25 @@ class MalignancyProcessor:
         if not self.suppress_logs:
             logging.info("Initializing the deep learning system")
 
-        if self.mode == "3D" and "hiera" in self.model_name.lower():
-            self.model_3d = Hiera3D(
-                image_size=self.size_px, image_depth=self.depth_px, kind="finetuned").cuda()
-        elif self.mode == "2D" and "hiera" in self.model_name.lower():
-            self.model_2d = Hiera2D(
-                image_size=self.size_px, kind="finetuned").cuda()
-        elif self.mode == "2D" and "vit" in self.model_name.lower():
-            self.model_2d = ViT2D(image_size=self.size_px,
-                                  kind="finetuned").cuda()
-        else:
-            raise ValueError("Invalid mode and/or model_name.")
+        # if self.mode == "3D" and "hiera" in self.model_name.lower():
+        #     self.model_3d = Hiera3D(
+        #         image_size=self.size_px, image_depth=self.depth_px, kind="finetuned").cuda()
+        # elif self.mode == "2D" and "hiera" in self.model_name.lower():
+        #     self.model_2d = Hiera2D(
+        #         image_size=self.size_px, kind="finetuned").cuda()
+        # elif self.mode == "2D" and "vit" in self.model_name.lower():
+        #     self.model_2d = ViT2D(image_size=self.size_px,
+        #                           kind="finetuned").cuda()
+        # else:
+        #     raise ValueError("Invalid mode and/or model_name.")
 
-        self.model_root = "/opt/app/resources/"
+        # self.model_root = "/opt/app/resources/"
+        
+        self.model_3d = VideoMAE(
+            model_name="MCG-NJU/videomae-large-finetuned-kinetics",
+            new_image_size=64,
+            num_classes=1,
+        )
 
     def define_inputs(self, image, header, coords):
         self.image = image

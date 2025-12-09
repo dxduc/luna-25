@@ -20,7 +20,7 @@ import SimpleITK
 import torch
 
 from processor_cpu import MalignancyProcessor as cpu
-# from processor_cuda import MalignancyProcessor as cuda
+from processor_cuda import MalignancyProcessor as cuda
 
 INPUT_PATH = Path("uploads/input")
 OUTPUT_PATH = Path("uploads/output")
@@ -105,15 +105,15 @@ class NoduleProcessor:
         self.clinical_information = clinical_information
         self.mode = mode
         self.model_name = model_name
-        self.processor = cpu(
-            mode=mode, suppress_logs=True, model_name=model_name)
+        # self.processor = cpu(
+        #     mode=mode, suppress_logs=True, model_name=model_name)
         
-        # if check == False:
-        #     self.processor = cpu(
-        #         mode=mode, suppress_logs=True, model_name=model_name)
-        # else:
-        #     self.processor = cuda(
-        #         mode=mode, suppress_logs=True, model_name=model_name)
+        if check == False:
+            self.processor = cpu(
+                mode=mode, suppress_logs=True, model_name=model_name)
+        else:
+            self.processor = cuda(
+                mode=mode, suppress_logs=True, model_name=model_name)
 
     def predict(self, input_image: SimpleITK.Image, coords: np.array) -> Dict:
         """

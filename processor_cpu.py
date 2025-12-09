@@ -6,7 +6,6 @@ import torch
 from torchvision.transforms import v2
 
 import dataloader
-from models.model_hiera import VideoMAESmallImageAdapter
 from models.mode_hiera_1 import VideoMAE
 
 
