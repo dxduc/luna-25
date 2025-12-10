@@ -1,28 +1,13 @@
-{
-    "name": "Points of interest",
-    "type": "Multiple points",
-    "points": [
-        {
-            "name": "123456_1_19990102",
-            "point": [
-                -64.78,
-                64.5,
-                -52.46
-            ],
-            "probability": 0.8341917395591736
-        },
-        {
-            "name": "123456_2_19990102",
-            "point": [
-                -78.49,
-                79.86,
-                -152.83
-            ],
-            "probability": 0.8645338416099548
-        }
-    ],
-    "version": {
-        "major": 1,
-        "minor": 0
+[
+    {
+        "SeriesInstanceUID": "1.2.840.113654.2.55.112678153129052512356539493326784217907"
+    },
+    {
+        "LesionID": 1
+    },
+    {
+        "probability": 0.08383242785930634,
+        "predictionLabel": 0,
+        "processingTimeMs": 11834.06
     }
-}
+]

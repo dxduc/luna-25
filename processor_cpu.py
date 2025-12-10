@@ -21,7 +21,7 @@ class MalignancyProcessor:
     Loads a chest CT scan, and predicts the malignancy around a nodule
     """
 
-    def __init__(self, mode="3D", suppress_logs=False, model_name="finetune-hiera"):
+    def __init__(self, mode="3D", suppress_logs=False, model_name="videomae"):
 
         self.size_px = 64
         self.size_mm = 50
@@ -30,29 +30,7 @@ class MalignancyProcessor:
         self.model_name = model_name
         self.mode = mode
         self.suppress_logs = suppress_logs
-
-        # if not self.suppress_logs:
-        #     logging.info("Initializing the deep learning system")
-
-        # if self.mode == "3D" and "hiera" in self.model_name.lower():
-        #     self.model_3d = Hiera3D(
-        #         image_size=self.size_px, image_depth=self.depth_px, kind="finetuned")
-        # elif self.mode == "2D" and "hiera" in self.model_name.lower():
-        #     self.model_2d = Hiera2D(
-        #         image_size=self.size_px, kind="finetuned")
-        # elif self.mode == "2D" and "vit" in self.model_name.lower():
-        #     self.model_2d = ViT2D(image_size=self.size_px,
-        #                           kind="finetuned")
-        # else:
-        #     raise ValueError("Invalid mode and/or model_name.")
-
-        # self.model_root = "/opt/app/resources/"
-        # self.model_3d = VideoMAESmallImageAdapter(
-        #     model_name="MCG-NJU/videomae-large-finetuned-kinetics",
-        #     new_image_size=64,
-        #     num_classes=1
-        # )
-        
+     
         self.model_3d = VideoMAE(
             model_name="MCG-NJU/videomae-large-finetuned-kinetics",
             new_image_size=64,

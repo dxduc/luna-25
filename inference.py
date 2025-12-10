@@ -1,15 +1,3 @@
-# Portions of this code are adapted from luna25-baseline-public
-# Source: https://github.com/DIAGNijmegen/luna25-baseline-public/blob/main/inference.py
-# License: Apache License 2.0 (see https://github.com/DIAGNijmegen/luna25-baseline-public/blob/main/LICENSE)
-
-try:
-    import warnings
-    warnings.filterwarnings("ignore", category=FutureWarning, module="timm")
-    import torchvision
-    torchvision.disable_beta_transforms_warning()
-except Exception as e:
-    print(f"Failed to disable warnings: {e}")
-
 from glob import glob
 import json
 from pathlib import Path
@@ -18,6 +6,7 @@ from typing import Dict
 import numpy as np
 import SimpleITK
 import torch
+import time
 
 from processor_cpu import MalignancyProcessor as cpu
 from processor_cuda import MalignancyProcessor as cuda
@@ -90,7 +79,7 @@ def itk_image_to_numpy_image(input_image):
 
 
 class NoduleProcessor:
-    def __init__(self, check, ct_image_file, nodule_locations, clinical_information, mode="3D", model_name="finetune-hiera"):
+    def __init__(self, check, ct_image_file, nodule_locations, clinical_information, lession_id, series_instance_uid, mode="3D", model_name="videomae"):
         """
         Parameters
         ----------
@@ -105,6 +94,9 @@ class NoduleProcessor:
         self.clinical_information = clinical_information
         self.mode = mode
         self.model_name = model_name
+        self.lession_id = lession_id
+        self.series_instance_uid = series_instance_uid
+        self.start_time = time.perf_counter()
         # self.processor = cpu(
         #     mode=mode, suppress_logs=True, model_name=model_name)
         
@@ -169,30 +161,44 @@ class NoduleProcessor:
 
         assert len(output) == len(
             annotationIDs), "Number of outputs should match number of inputs"
-        results = {
-            "name": "Points of interest",
-            "type": "Multiple points",
-            "points": [],
-            "version": {
-                "major": 1,
-                "minor": 0
-            }
-        }
+        # results = {
+        #     "name": "Points of interest",
+        #     "type": "Multiple points",
+        #     "points": [],
+        #     "version": {
+        #         "major": 1,
+        #         "minor": 0
+        #     }
+        # }
 
         # Populate the "points" section dynamically
-        coords = np.flip(coords, axis=1)
+        # coords = np.flip(coords, axis=1)
+        # for i in range(len(annotationIDs)):
+        #     results["points"].append(
+        #         {
+        #             "name": annotationIDs[i],
+        #             "point": coords[i].tolist(),
+        #             "probability": float(output[i])
+        #         }
+        #     )
+
+        output_data = []
+        output_data.append({"SeriesInstanceUID": self.series_instance_uid})
+        output_data.append({"LesionID": self.lession_id})
+        
+        end_time = time.perf_counter()
+        processing_time_ms = (end_time - self.start_time) * 1000.0
         for i in range(len(annotationIDs)):
-            results["points"].append(
-                {
-                    "name": annotationIDs[i],
-                    "point": coords[i].tolist(),
-                    "probability": float(output[i])
-                }
-            )
-        return results
+            prop = float(output[i])
+            output_data.append({
+                "probability": prop,
+                "predictionLabel": 1 if prop > 0.5 else 0,
+                "processingTimeMs": round(processing_time_ms, 2)
+            })
+        return {"output": output_data}
 
 
-def run(nodule_locations, clinical_information, chest_ct_file, mode="3D", model_name="finetune-hiera"):
+def run(nodule_locations, clinical_information, chest_ct_file, lession_id, series_instance_uid, mode="3D", model_name="videomae"):
     # Read the inputs
     # input_nodule_locations = load_json_file(nodule_locations_file)
     # input_clinical_information = load_json_file(clinical_information_file)
@@ -208,6 +214,8 @@ def run(nodule_locations, clinical_information, chest_ct_file, mode="3D", model_
     processor = NoduleProcessor(check, ct_image_file=input_chest_ct,
                                 nodule_locations=nodule_locations,
                                 clinical_information=clinical_information,
+                                lession_id=lession_id,
+                                series_instance_uid=series_instance_uid,
                                 mode=mode,
                                 model_name=model_name)
     malignancy_risks = processor.process()
@@ -215,9 +223,9 @@ def run(nodule_locations, clinical_information, chest_ct_file, mode="3D", model_
     # Save your output
     write_json_file(
         location="results/results.json",
-        content=malignancy_risks,
+        content=malignancy_risks["output"],
     )
-    return 0
+    return malignancy_risks["output"] 
 
 
 def load_json_file(location):
