@@ -1,7 +1,7 @@
 import requests
 from pathlib import Path
 
-url = "http://localhost:8000/predict"
+url = "http://localhost:8000/api/v1/predict/lesion"
 
 # Đường dẫn file MHA
 mha_path = Path(
