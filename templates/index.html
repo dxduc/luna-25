@@ -270,7 +270,7 @@ form.addEventListener("submit", async function(e){
     let data = new FormData(form);
 
     try{
-        const res = await fetch("/predict",{
+        const res = await fetch("/api/v1/predict/lesion",{
             method:"POST",
             body:data,
         });
@@ -302,11 +302,9 @@ form.addEventListener("submit", async function(e){
         table.style.display="table";
 
         // Show download link
-        if(json.csvFile){
-            downloadLink.href=json.csvFile;
-            downloadLink.setAttribute("download","");
-            downloadBox.style.display="block";
-        }
+        downloadLink.href = "/download/csv";  // URL API download CSV
+        downloadLink.setAttribute("download", "prediction_results.csv");
+        downloadBox.style.display = "block";               // hiện nút download
 
     }catch(err){
         errorBox.innerText="❌ Lỗi: "+err.message;

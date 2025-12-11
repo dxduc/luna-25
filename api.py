@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 
 import inference
@@ -87,7 +87,7 @@ def build_inputs_from_tabular_row(row: Dict) -> Tuple[Dict, Dict]:
     return clinical_data, locations_data
 
 
-@app.post("/predict")
+@app.post("/api/v1/predict/lesion")
 async def predict_malignancy(
     image_file: UploadFile = File(..., description="File ảnh CT phổi (.mha / .mhd)"),
 
@@ -164,6 +164,15 @@ async def predict_malignancy(
     finally:
         if os.path.exists(img_path):
             os.remove(img_path)
+            
+@app.get("/download/csv")
+async def download_csv():
+    file_path = "results/results.csv"
+    return FileResponse(
+        path=file_path,
+        filename="prediction_results.csv",
+        media_type="text/csv"
+    )
 
 if __name__ == "__main__":
     import uvicorn

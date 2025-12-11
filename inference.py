@@ -7,6 +7,8 @@ import numpy as np
 import SimpleITK
 import torch
 import time
+import csv
+import os
 
 from processor_cpu import MalignancyProcessor as cpu
 from processor_cuda import MalignancyProcessor as cuda
@@ -161,26 +163,6 @@ class NoduleProcessor:
 
         assert len(output) == len(
             annotationIDs), "Number of outputs should match number of inputs"
-        # results = {
-        #     "name": "Points of interest",
-        #     "type": "Multiple points",
-        #     "points": [],
-        #     "version": {
-        #         "major": 1,
-        #         "minor": 0
-        #     }
-        # }
-
-        # Populate the "points" section dynamically
-        # coords = np.flip(coords, axis=1)
-        # for i in range(len(annotationIDs)):
-        #     results["points"].append(
-        #         {
-        #             "name": annotationIDs[i],
-        #             "point": coords[i].tolist(),
-        #             "probability": float(output[i])
-        #         }
-        #     )
 
         output_data = []
         output_data.append({"SeriesInstanceUID": self.series_instance_uid})
@@ -225,6 +207,10 @@ def run(nodule_locations, clinical_information, chest_ct_file, lession_id, serie
         location="results/results.json",
         content=malignancy_risks["output"],
     )
+    write_csv_file(
+        location="results/results.csv",
+        rows=malignancy_risks["output"],
+    )
     return malignancy_risks["output"] 
 
 
@@ -239,6 +225,33 @@ def write_json_file(*, location, content):
     with open(location, "w") as f:
         f.write(json.dumps(content, indent=4))
 
+
+def write_csv_file(location: str, rows: list[dict]):
+    """
+    Ghi list[dict] ra file CSV.
+    Tự động union tất cả key làm cột, tránh lỗi "fields not in fieldnames".
+    """
+    # Không có dòng nào thì thôi
+    if not rows:
+        return
+
+    # Tạo thư mục nếu cần
+    os.makedirs(os.path.dirname(location), exist_ok=True)
+
+    # Lấy hợp tất cả các key từ mọi dict
+    all_keys = set()
+    for row in rows:
+        all_keys.update(row.keys())
+    fieldnames = list(all_keys)
+
+    with open(location, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for row in rows:
+            # Đảm bảo mọi field có đủ key, nếu thiếu thì ghi rỗng
+            safe_row = {key: row.get(key, "") for key in fieldnames}
+            writer.writerow(safe_row)
 
 def load_image_path(location):
     # Đảm bảo location là đối tượng Path để dễ xử lý
@@ -266,10 +279,3 @@ def load_image_path(location):
 
 def _show_torch_cuda_info():
     return torch.cuda.is_available()
-
-
-# if __name__ == "__main__":
-#     mode = "3D"
-#     model_name = "finetune-hiera"
-#     raise SystemExit(run(mode=mode,
-#                          model_name=model_name))
